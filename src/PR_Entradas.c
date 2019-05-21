@@ -4,11 +4,12 @@
 
 #include "../inc/PR_Entradas.h"
 #include "shared_memory.h"
+#include <stdio.h>
 
 #define IN_SIZE 3
 #define IN(i) (8 + i)
 
-char* data;
+char* data = NULL;
 /***********************************************************************************************************************************
 *** FUNCIONES PRIVADAS AL MODULO
 **********************************************************************************************************************************/
@@ -29,5 +30,6 @@ uint8_t LeerEntrada ( uint8_t nEntrada ) {
         data = shmat(shmid, NULL, 0);
     }
 
-    return IN(nEntrada);
+    uint8_t in = data[IN(nEntrada)];
+    return in;
 }

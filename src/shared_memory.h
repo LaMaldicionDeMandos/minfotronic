@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define DATA_SIZE 6
+#define DATA_SIZE 11
 #define MEMORY_SIZE sizeof(char) * DATA_SIZE
 
 extern char* data;
