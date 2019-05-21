@@ -16,23 +16,18 @@ char* data;
 /***********************************************************************************************************************************
 *** FUNCIONES GLOBALES AL MODULO
 **********************************************************************************************************************************/
-uint8_t GetKey ( void ) {
-
-    for (int i = 0; i < KEY_SIZE; i++) {
-        if (data[KEY(i)] == ON){
-            data[KEY(i)] = OFF;
-            return i;
-        }
-    }
-
-    return NO_KEY;
-
-}
-
-
 uint8_t LeerEntrada ( uint8_t nEntrada ) {
     int shmid;
     if (nEntrada < 0 || nEntrada >= IN_SIZE) return OFF;
+
+    if (!data) {
+        shmid = init_shared_memory();
+        if (shmid < 0) {
+            perror("Hubo un error con la libreria infotronic, por favor reinicie.\n");
+            return OFF;
+        }
+        data = shmat(shmid, NULL, 0);
+    }
 
     return IN(nEntrada);
 }
