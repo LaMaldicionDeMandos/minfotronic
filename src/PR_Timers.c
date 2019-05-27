@@ -46,15 +46,17 @@ void TimerStart(uint8_t event, uint32_t time, Timer_Handler handler , uint8_t ba
     params->base = base;
     params->handler = handler;
     params->time = time;
+
+    timers[event].params = params;
+    timers[event].init_time = get_now_in_milliseconds();
+    timers[event].running = TRUE;
+
     pthread_t thread;
     if (pthread_create(&thread, NULL, (void *(*)(void *))thread_executor, params)) {
         perror("Error creating thread\n");
         exit(1);
     }
     timers[event].thread = thread;
-    timers[event].params = params;
-    timers[event].init_time = get_now_in_milliseconds();
-    timers[event].running = TRUE;
 }
 
 void SetTimer( uint8_t event, uint32_t time ) {
@@ -74,9 +76,9 @@ void SetTimer( uint8_t event, uint32_t time ) {
 
 void TimerClose(void) {
     for (int i = 0; i < N_TIMERS; i++) {
+        pthread_cancel(timers[i].thread);
         if (timers[i].running) {
             timers[i].running = FALSE;
-            pthread_cancel(timers[i].thread);
             free(timers[i].params);
             timers[i].params = NULL;
         }
