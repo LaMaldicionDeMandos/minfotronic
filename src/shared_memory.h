@@ -5,14 +5,15 @@
 #ifndef TPC3_SHARED_MEMORY_H
 #define TPC3_SHARED_MEMORY_H
 
+#include "../inc/DR_tipos.h"
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-#define DATA_SIZE 15
-#define MEMORY_SIZE sizeof(char) * DATA_SIZE
+#define DATA_SIZE 17
+#define MEMORY_SIZE sizeof(uint8_t) * DATA_SIZE
 
 extern char* data;
 
