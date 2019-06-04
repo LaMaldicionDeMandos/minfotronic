@@ -9,7 +9,7 @@
 #define IN_SIZE 3
 #define IN(i) (8 + i)
 
-uint8_t* data = NULL;
+uint8_t* inputs = NULL;
 /***********************************************************************************************************************************
 *** FUNCIONES PRIVADAS AL MODULO
 **********************************************************************************************************************************/
@@ -21,15 +21,15 @@ uint8_t LeerEntrada ( uint8_t nEntrada ) {
     int shmid;
     if (nEntrada < 0 || nEntrada >= IN_SIZE) return OFF;
 
-    if (!data) {
+    if (!inputs) {
         shmid = init_shared_memory();
         if (shmid < 0) {
             perror("Hubo un error con la libreria infotronic, por favor reinicie.\n");
             return OFF;
         }
-        data = shmat(shmid, NULL, 0);
+        inputs = shmat(shmid, NULL, 0);
     }
 
-    uint8_t in = data[IN(nEntrada)];
+    uint8_t in = inputs[IN(nEntrada)];
     return in;
 }

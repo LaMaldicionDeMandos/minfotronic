@@ -1,15 +1,19 @@
 //
 // Created by Macbook pro Retina on 2019-05-11.
 //
-#include "../inc/PR_RGB.h"
+#include "../inc/PR_adc.h"
 #include "shared_memory.h"
 
-#define STATE(b) b ? "ON" : "OFF"
-#define LED(i) 5 + i
+#define THERMOMETER_LOW thermometer_data[15]
+#define THERMOMETER_HIGH thermometer_data[16]
 
-#define LED_0 0
+#define ZERO_CELCIUS 2730
+uint8_t* thermometer_data = NULL;
 
-uint8_t* leds = NULL;
+typedef union {
+    uint16_t value;
+    uint8_t  bytes[2];
+} THERMOMETER_TYPE;
 
 /***********************************************************************************************************************************
 *** FUNCIONES PRIVADAS AL MODULO
@@ -18,18 +22,19 @@ uint8_t* leds = NULL;
 /***********************************************************************************************************************************
 *** FUNCIONES GLOBALES AL MODULO
 **********************************************************************************************************************************/
-void LedsRGB( uint8_t led , uint8_t estado ){
+int16_t Temperatura() {
     int shmid;
-    if (!leds) {
+    if (!thermometer_data) {
         shmid = init_shared_memory();
         if (shmid < 0) {
             perror("Hubo un error con la libreria infotronic, por favor reinicie.\n");
-            return;
+            return 0;
         }
-        leds = shmat(shmid, NULL, 0);
-    }
-    if (led == ROJO) {
-        leds[LED(LED_0)] = estado;
+        thermometer_data = shmat(shmid, NULL, 0);
     }
 
+    THERMOMETER_TYPE thermometer;
+    thermometer.bytes[0] = THERMOMETER_LOW;
+    thermometer.bytes[1] = THERMOMETER_HIGH;
+    return thermometer.value - ZERO_CELCIUS;
 }
