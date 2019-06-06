@@ -29,7 +29,7 @@ typedef struct{
 typedef struct{
     pthread_t thread;
     Params* params;
-    uint32_t init_time;
+    unsigned long init_time;
     int running;
 }Timer;
 
@@ -37,8 +37,9 @@ Timer timers[N_TIMERS];
 
 void thread_executor(const void* params);
 int get_multiplier(uint8_t base);
-uint32_t get_time_in_milliseconds(uint32_t time, uint8_t base);
-uint32_t get_now_in_milliseconds();
+unsigned long get_time_in_milliseconds(unsigned long time, uint8_t base);
+unsigned long get_now_in_milliseconds();
+uint32_t map_milliseconds_to_base(unsigned long milliseconds, uint8_t base);
 
 void TimerStart(uint8_t event, uint32_t time, Timer_Handler handler , uint8_t base ) {
     Params* params = malloc(sizeof(Params));
@@ -85,6 +86,15 @@ void TimerClose(void) {
     }
 }
 
+uint32_t GetTimer( uint8_t event ) {
+    Timer timer = timers[event];
+    if (!timer.running) return 0;
+    uint32_t now = get_now_in_milliseconds();
+    uint32_t time = now - timer.init_time;
+    long rest_of_milliseconds = get_time_in_milliseconds(timer.params->time, timer.params->base) - time;
+    return map_milliseconds_to_base(rest_of_milliseconds, timer.params->base);
+}
+
 int get_multiplier(uint8_t base) {
     if (base == DEC) return DEC_M;
     if (base == MIN) return MIN_M;
@@ -92,7 +102,7 @@ int get_multiplier(uint8_t base) {
     return SEC_M;
 }
 
-uint32_t get_time_in_milliseconds(uint32_t time, uint8_t base) {
+unsigned long get_time_in_milliseconds(unsigned long time, uint8_t base) {
     if (base == DEC) return time * 100;
     if (base == MIN) return time * 60000;
     if (base == MIL) return time;
@@ -109,8 +119,19 @@ void thread_executor(const void* args) {
     handler();
 }
 
-uint32_t get_now_in_milliseconds() {
+unsigned long get_now_in_milliseconds() {
     struct timeb time;
     ftime(&time);
-    return time.time * time.millitm;
+    return time.time*1000 + time.millitm;
+}
+
+uint32_t map_milliseconds_to_base(unsigned long milliseconds, uint8_t base) {
+    uint32_t multiplier;
+    switch (base) {
+        case MIL: multiplier = 1;break;
+        case DEC: multiplier = 100;break;
+        case SEG: multiplier = 1000;break;
+        case MIN: multiplier = 60000;break;
+    }
+    return milliseconds/multiplier;
 }
