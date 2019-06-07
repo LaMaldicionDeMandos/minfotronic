@@ -82,6 +82,10 @@ void TimerClose(void) {
     }
 }
 
+void TimerStop(uint8_t event) {
+    stop_timer(get_timer(event));
+}
+
 uint32_t GetTimer( uint8_t event ) {
     Timer* timer = get_timer(event);
     if (!timer->is_running) return 0;
