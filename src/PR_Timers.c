@@ -48,9 +48,10 @@ uint64_t milliseconds_to_base(uint64_t milliseconds, uint8_t base);
 
 //--------------- behaviour ------------------------//
 void start_in_milliseconds(uint8_t event, uint64_t time, Timer_Handler handler , uint8_t base );
-void pause_timer(Timer timer);
-void resume_timer(Timer timer);
-void stop_timer(Timer timer);
+void pause_timer(Timer* timer);
+void resume_timer(Timer* timer);
+void stop_timer(Timer* timer);
+Timer* get_timer(int index);
 
 
 //--------------- API ------------------------//
@@ -59,16 +60,16 @@ void TimerStart(uint8_t event, uint32_t time, Timer_Handler handler , uint8_t ba
 }
 
 void SetTimer( uint8_t event, uint32_t time ) {
-    Timer timer = timers[event];
-    if (timer.is_running) {
-        pthread_cancel(timer.thread);
-        uint64_t rest_time = to_milliseconds(time, timer.params->base) - (now_in_milliseconds() - timer.init_time);
+    Timer* timer = get_timer(event);
+    if (timer->is_running) {
+        pthread_cancel(timer->thread);
+        uint64_t rest_time = to_milliseconds(time, timer->params->base) - (now_in_milliseconds() - timer->init_time);
         if (rest_time <= 0) {
-            thread_executor(timer.params);
+            thread_executor(timer->params);
         } else {
-            uint8_t base = timer.params->base;
-            Timer_Handler handler = timer.params->handler;
-            free(timer.params);
+            uint8_t base = timer->params->base;
+            Timer_Handler handler = timer->params->handler;
+            free(timer->params);
             start_in_milliseconds(event, rest_time, handler, base);
         }
 
@@ -77,21 +78,21 @@ void SetTimer( uint8_t event, uint32_t time ) {
 
 void TimerClose(void) {
     for (int i = 0; i < N_TIMERS; i++) {
-        stop_timer(timers[i]);
+        stop_timer(get_timer(i));
     }
 }
 
 uint32_t GetTimer( uint8_t event ) {
-    Timer timer = timers[event];
-    if (!timer.is_running) return 0;
+    Timer* timer = get_timer(event);
+    if (!timer->is_running) return 0;
     uint32_t now = now_in_milliseconds();
-    uint32_t time = now - timer.init_time;
-    long rest_time = timer.params->time - time;
-    return milliseconds_to_base(rest_time, timer.params->base);
+    uint32_t time = now - timer->init_time;
+    long rest_time = timer->params->time - time;
+    return milliseconds_to_base(rest_time, timer->params->base);
 }
 
 void StandByTimer( uint8_t event , uint8_t accion) {
-    Timer timer = timers[event];
+    Timer* timer = get_timer(event);
     if (accion == PAUSE) {
         pause_timer(timer);
     } else {
@@ -111,24 +112,24 @@ void thread_executor(const void* args) {
 }
 
 //--------------- behaviour ------------------------//
-void pause_timer(Timer timer) {
-    if (timer.is_running && !timer.is_stopped) {
-        pthread_cancel(timer.thread);
-        timer.stopped_time = now_in_milliseconds();
-        timer.is_stopped = TRUE;
-        printf("pause_time: %lld, ----> stopped: %d\n", timer.stopped_time, timer.is_stopped);
+void pause_timer(Timer* timer) {
+    if (timer->is_running && !timer->is_stopped) {
+        pthread_cancel(timer->thread);
+        timer->stopped_time = now_in_milliseconds();
+        timer->is_stopped = TRUE;
+        printf("pause_time: %lld, ----> stopped: %d\n", timer->stopped_time, timer->is_stopped);
     }
 }
 
-void resume_timer(Timer timer) {
-    printf("Resume library, stopped: %d\n", timer.is_stopped);
-    if (timer.is_running && timer.is_stopped) {
+void resume_timer(Timer* timer) {
+    printf("Resume library, stopped: %d\n", timer->is_stopped);
+    if (timer->is_running && timer->is_stopped) {
         printf("Efectivamente resume\n");
-        uint64_t time = timer.params->time + timer.init_time - timer.stopped_time;
-        uint8_t event = timer.params->event;
-        uint8_t base = timer.params->base;
-        Timer_Handler handler = timer.params->handler;
-        free(timer.params);
+        uint64_t time = timer->params->time + timer->init_time - timer->stopped_time;
+        uint8_t event = timer->params->event;
+        uint8_t base = timer->params->base;
+        Timer_Handler handler = timer->params->handler;
+        free(timer->params);
         start_in_milliseconds(event, time, handler, base);
     }
 }
@@ -154,13 +155,17 @@ void start_in_milliseconds(uint8_t event, uint64_t time, Timer_Handler handler ,
     timers[event].thread = thread;
 }
 
-void stop_timer(Timer timer) {
-    pthread_cancel(timer.thread);
-    if (timer.is_running) {
-        timer.is_running = FALSE;
-        free(timer.params);
-        timer.params = NULL;
+void stop_timer(Timer* timer) {
+    pthread_cancel(timer->thread);
+    if (timer->is_running) {
+        timer->is_running = FALSE;
+        free(timer->params);
+        timer->params = NULL;
     }
+}
+
+Timer* get_timer(int index) {
+    return timers + index;
 }
 
 //--------------- time manipulation ------------------------//
