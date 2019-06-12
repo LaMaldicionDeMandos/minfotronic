@@ -12,6 +12,8 @@ uint8_t* adc_data = NULL;
 #define THERMOMETER_HIGH adc_data[16]
 #define POTENTIOMETER_LOW adc_data[17]
 #define POTENTIOMETER_HIGH adc_data[18]
+#define ADC_EXTERN_LOW adc_data[19]
+#define ADC_EXTERN_HIGH adc_data[20]
 
 #define ZERO_CELCIUS 2730
 
@@ -55,4 +57,9 @@ int16_t Temperatura() {
 int16_t Potenciometro ( void ) {
     adc_data = init_data();
     return readData(POTENTIOMETER_LOW, POTENTIOMETER_HIGH).value;
+}
+
+int16_t ADC_Externa ( void ) {
+    adc_data = init_data();
+    return readData(ADC_EXTERN_LOW, ADC_EXTERN_HIGH).value;
 }
