@@ -2,7 +2,7 @@ DATE=$(shell date)
 COMPILER = gcc
 CFLAGS=-c -Wall -I .
 LFLAGS=-Wall -lrt
-OBJS=PR_Teclado.o PR_RGB.o PR_Timers.o PR_Entradas.o PR_Relays.o PR_adc.o shared_memory.o
+OBJS=PR_Teclado.o PR_RGB.o PR_Timers.o PR_Entradas.o PR_Relays.o PR_adc.o PR_7seg.o shared_memory.o
 SLIB=minfotronic.a
 # Introducimos macros.
 #    < Contiene la dependencia del target
