@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define DATA_SIZE 29
+#define DATA_SIZE 61
 #define MEMORY_SIZE sizeof(uint8_t) * DATA_SIZE
 
 extern char* data;

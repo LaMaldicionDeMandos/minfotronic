@@ -8,7 +8,7 @@ int shmid = 0;
 
 key_t getKey() {
     key_t key;
-    if ((key = ftok("/", 'm')) == -1) {
+    if ((key = ftok("/", 'l')) == -1) {
         perror("ftok fails\n");
         return -1;
     }
